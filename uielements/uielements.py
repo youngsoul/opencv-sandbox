@@ -1,4 +1,3 @@
-
 import cv2
 from abc import ABC, abstractmethod
 from enum import Enum
@@ -90,4 +89,3 @@ class CircleButton(Shape):
                 self.on_exit(x, y, image)
                 self.state = Shape.Meta.State.INACTIVE
                 self.draw(image)
-
