@@ -26,8 +26,8 @@ def draw_circles():
     global video_frame
     if video_frame is not None:
         for i,data in enumerate(hot_spots):
-            x = int(data[0]*video_frame.shape[0])
-            y = int(data[1]*video_frame.shape[1])
+            x = int(data[0]*video_frame.shape[1])
+            y = int(data[1]*video_frame.shape[0])
             radius = int(data[2]*(video_frame.shape[0]*video_frame.shape[1]))
             cv2.circle(video_frame, (x,y), radius, (255, 0, 255), 1, lineType=cv2.LINE_AA)
 

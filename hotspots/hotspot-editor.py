@@ -91,7 +91,7 @@ if __name__ == '__main__':
         hotsport_writer = csv.writer(f, delimiter=',')
         for i, data in enumerate(hot_spots):
 
-            norm_x = data[0] / frame_shape[0]
-            norm_y = data[1] / frame_shape[1]
+            norm_x = data[0] / frame_shape[1]
+            norm_y = data[1] / frame_shape[0]
             norm_radius = data[2] / (frame_shape[0]*frame_shape[1])
             hotsport_writer.writerow([norm_x, norm_y, norm_radius])
