@@ -35,7 +35,7 @@ class Shape(ABC):
         return textX, textY
 
     @abstractmethod
-    def is_point_inside(self, x, y, image):
+    def is_point_inside(self, x, y):
         pass
 
     @abstractmethod
@@ -82,7 +82,7 @@ class CircleButton(Shape):
         self.draw(image)
 
     def process_point(self, x, y, image):
-        in_circle = (x-self.anchor_x)**2 + (y-self.anchor_y)**2 < self.radius**2
+        in_circle = self.is_point_inside(x,y)
         if self.state is Shape.Meta.State.INACTIVE:
             if in_circle == True:
                 self.state = Shape.Meta.State.ENTER
@@ -94,6 +94,6 @@ class CircleButton(Shape):
                 self.state = Shape.Meta.State.INACTIVE
                 self.draw(image)
 
-    def is_point_inside(self, x, y, image):
+    def is_point_inside(self, x, y):
         in_circle = (x - self.anchor_x) ** 2 + (y - self.anchor_y) ** 2 < self.radius ** 2
         return in_circle
