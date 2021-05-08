@@ -65,14 +65,14 @@ class CircleButton(Shape):
     def draw(self, image):
         if self.state == Shape.Meta.State.INACTIVE:
             cv2.circle(image, (self.anchor_x, self.anchor_y), self.radius, self.outline_color, 2, lineType=cv2.LINE_AA)
-            cv2.circle(image, (self.anchor_x, self.anchor_y), int(self.radius*0.8), self.outline_color, -1)
+            # cv2.circle(image, (self.anchor_x, self.anchor_y), int(self.radius*0.8), self.outline_color, -1)
 
             textX, textY = self._center_text(self.label)
             # add text centered on image
             cv2.putText(image, self.label, (textX, textY + self.radius + 15), self.font, 1, (255, 255, 255), 2)
         else:
             cv2.circle(image, (self.anchor_x, self.anchor_y), self.radius, (0, 0, 255), 2, lineType=cv2.LINE_AA)
-            cv2.circle(image, (self.anchor_x, self.anchor_y), int(self.radius*0.4), (111,22,88), -1)
+            cv2.circle(image, (self.anchor_x, self.anchor_y), int(self.radius*0.4), self.outline_color, -1)
             textX, textY = self._center_text(self.label)
             # add text centered on image
             cv2.putText(image, self.label, (textX, textY + self.radius + 15), self.font, 1, (255, 255, 255), 2)
