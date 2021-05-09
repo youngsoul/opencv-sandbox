@@ -2,6 +2,7 @@ import cv2
 import argparse
 import csv
 import numpy as np
+from pathlib import Path
 
 window_name = 'HotSpotEditor'
 radius = None
@@ -92,13 +93,14 @@ if __name__ == '__main__':
 
         if read_file:
             read_file = False
-            # read in the hotspot data
-            with open(filename, "r") as f:
-                csv_reader = csv.reader(f, delimiter=',')
-                for row in csv_reader:
-                    print(f'\t{row}')
-                    row = list(np.float_(row))
-                    hot_spots.append([int(row[0]*frame_shape[1]), int(row[1]*frame_shape[0]), int(row[2]*(frame_shape[0]*frame_shape[1]))])
+            if Path(filename).exists():
+                # read in the hotspot data
+                with open(filename, "r") as f:
+                    csv_reader = csv.reader(f, delimiter=',')
+                    for row in csv_reader:
+                        print(f'\t{row}')
+                        row = list(np.float_(row))
+                        hot_spots.append([int(row[0]*frame_shape[1]), int(row[1]*frame_shape[0]), int(row[2]*(frame_shape[0]*frame_shape[1]))])
 
         k = cv2.waitKey(10) & 0xFF
         if k == ord('q'):
