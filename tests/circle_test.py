@@ -1,4 +1,4 @@
-from uielements.uielements import CircleButton
+from uielements.uielements import CircleButton, DisplayValueLabel
 import numpy as np
 import cv2
 import time
@@ -28,6 +28,10 @@ if __name__ == '__main__':
 
     circle_btn3 = CircleButton(800, 400, 50, "Btn3", (255, 0, 255))
     circle_btn3.draw(img)
+
+    l1 = DisplayValueLabel(3,3,140,40,"Test")
+    l1.set_value(99)
+    l1.draw(img)
     while True:
 
         # display image

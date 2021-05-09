@@ -100,3 +100,41 @@ class CircleButton(Shape):
     def is_point_inside(self, x, y):
         in_circle = (x - self.anchor_x) ** 2 + (y - self.anchor_y) ** 2 < self.radius ** 2
         return in_circle
+
+class DisplayValueLabel(Shape):
+    def __init__(self, x, y, width, height, label, bkgnd_color=(245, 117, 16), value_color=(255,255,255)):
+        super().__init__(x, y, label)
+        self.width = width
+        self.height = height
+        self.bkgnd_color = bkgnd_color
+        self.textsize = cv2.getTextSize(self.label, self.font, 1, 2)[0]
+        self.value = None
+        self.value_color = value_color
+        self.label_x = self.anchor_x+10
+        self.label_y = self.anchor_y+25
+        self.value_x = self.textsize[0] + 10
+        self.value_y = self.anchor_y+25
+
+    def set_value(self, val):
+        self.value = val
+
+    def draw(self, image):
+        cv2.rectangle(image, (self.anchor_x, self.anchor_y), (self.anchor_x+self.width, self.anchor_y+self.height), self.bkgnd_color, -1)
+
+        # Display Class
+        cv2.putText(image, self.label
+                    , (self.label_x, self.label_y), cv2.FONT_HERSHEY_SIMPLEX, 0.8, (0, 0, 0), 1, cv2.LINE_AA)
+        cv2.putText(image, f"{self.value}"
+                    , (self.value_x, self.value_y), cv2.FONT_HERSHEY_SIMPLEX, 0.8, (255, 255, 255), 2, cv2.LINE_AA)
+
+    def on_enter(self, x, y, image):
+        pass
+
+    def on_exit(self, x, y, image):
+        pass
+
+    def process_point(self, x, y, image):
+        pass
+
+    def is_point_inside(self, x, y):
+        return False
