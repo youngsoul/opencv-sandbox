@@ -102,17 +102,18 @@ class CircleButton(Shape):
         return in_circle
 
 class DisplayValueLabel(Shape):
-    def __init__(self, x, y, width, height, label, bkgnd_color=(245, 117, 16), value_color=(255,255,255)):
+    def __init__(self, x, y, width, height, label, bkgnd_color=(245, 117, 16), value_color=(255,255,255), label_value_space=10):
         super().__init__(x, y, label)
         self.width = width
         self.height = height
         self.bkgnd_color = bkgnd_color
+        # textsize = tuple = (x,y)
         self.textsize = cv2.getTextSize(self.label, self.font, 1, 2)[0]
         self.value = None
         self.value_color = value_color
         self.label_x = self.anchor_x+10
         self.label_y = self.anchor_y+25
-        self.value_x = self.textsize[0] + 10
+        self.value_x = self.textsize[0] + label_value_space
         self.value_y = self.anchor_y+25
 
     def set_value(self, val):
