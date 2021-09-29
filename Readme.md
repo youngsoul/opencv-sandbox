@@ -6,6 +6,9 @@ Collection of random musings with OpenCV
 
 A hotspot editor that will take a screen capture from the webcam and let you click to create circular hotspots and save the nomarlized coordinates
 
+```shell
+python hotspots.hotspot-editor.py
+```
 ## uielements
 
 create simple ui elements.
