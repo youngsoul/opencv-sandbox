@@ -14,3 +14,9 @@ for example
 
 CircleButton
 
+## Install
+
+```shell
+
+pip install https://github.com/youngsoul/opencv-sandbox/archive/master.zip
+```
