@@ -212,5 +212,5 @@ class SolidColorRect(RectangleHotSpot):
     def draw(self, image, color=None):
         if color is None:
             color = self.color
-        cv2.rectangle(image, (self.rect[0], self.rect[1]),
-                      ((self.rect[2] - self.rect[0]), (self.rect[3] - self.rect[1])), color, -1)
+        cv2.rectangle(image, pt1=(self.rect[0], self.rect[1]), pt2=(self.rect[2], self.rect[3]), color=color, thickness=-1)
+
