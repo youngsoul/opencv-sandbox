@@ -3,7 +3,12 @@
 This script will allow one to draw rectangles on an image and upon mouse release it will print the 
 upper left corner (x,y) and the lower right corner (x,y) values along with the scaled values.
 
-usage: python rect-hotspot.py --image-path ../images/8x8matrix_expansion.png --width 600 --read-file --show-hotspots
+usage: python rect-hotspot.py --image-path ../images/8x8matrix_expansion.png --width 600 --show-hotspots
+
+usage: python rect-hotspot.py --read-only --image ../images/8x8matrix_expansion.png --width 600 --show-hotspots --filename 8x8-matrix-hotspots.csv
+
+
+Right click in the Rectangle hotspot to remove
 
 '''
 import argparse
@@ -14,13 +19,31 @@ import numpy as np
 
 WINDOW_NAME = "Image"
 
+# collection of hotspot rectangles.
+# [(ul-x, ul-y, lr-x, lr-y), ()]
 collected_hotspots = []
+
+# the image to select hotspots on
 image = None
 
 # variables
 ix = -1
 iy = -1
 drawing = False
+
+
+def _rectContains(rect, pt):
+    """
+
+    :param rect: (ix,iy,x,y)
+    :type rect:
+    :param pt: (new x,new y)
+    :type pt:
+    :return:
+    :rtype:
+    """
+    logic = rect[0] < pt[0] < rect[2] and rect[1] < pt[1] < rect[3]
+    return logic
 
 
 def draw_reactangle_with_drag(event, x, y, flags, param):
@@ -33,29 +56,36 @@ def draw_reactangle_with_drag(event, x, y, flags, param):
     elif event == cv2.EVENT_MOUSEMOVE:
         if drawing:
             image2 = read_image()
-            print(image2.shape)
             cv2.rectangle(image2, pt1=(ix, iy), pt2=(x, y), color=(0, 255, 255), thickness=3)
             image = image2
 
     elif event == cv2.EVENT_LBUTTONUP:
         drawing = False
         cv2.rectangle(image, pt1=(ix, iy), pt2=(x, y), color=(0, 255, 255), thickness=3)
-        print(ix, iy, x, y)
         collected_hotspots.append((ix, iy, x, y))
         image = read_image()
 
 
 def mouse_events(event, x, y,
-                flags, param):
-
+                 flags, param):
+    global image
     draw_reactangle_with_drag(event, x, y, flags, param)
+
+    if event == cv2.EVENT_RBUTTONDOWN:
+        for i, rect in enumerate(collected_hotspots):
+            if _rectContains(rect, (x, y)):
+                del collected_hotspots[i]
+                image = read_image()
+                break
 
     if show_hotspots:
         show_collected_hotspots()
 
     cv2.imshow(WINDOW_NAME, image)
 
+
 def show_collected_hotspots():
+    global image
     for points in collected_hotspots:
         ix = int(points[0])
         iy = int(points[1])
@@ -68,7 +98,6 @@ def show_collected_hotspots():
 def read_image():
     if mask_transparent:
         _image = cv2.imread(image_path, cv2.IMREAD_UNCHANGED)
-        print(_image.shape)
         # make mask of where the transparent bits are
         trans_mask = _image[:, :, 3] == 0
 
@@ -87,12 +116,14 @@ if __name__ == '__main__':
     ap.add_argument("--image-path", type=str, required=True, help="Path to the image to load")
     ap.add_argument("--width", type=int, required=False, default=None, help="Resize image to specified width")
     ap.add_argument("--height", type=int, required=False, default=None, help="Resize image to specified height")
-    
-    ap.add_argument("--filename", required=False, default="rect-hotspots.csv",
-                    help="Optional[rect-hotspots.csv] Filename to save hotspot data")
-    ap.add_argument("--read-file", action='store_true', help="read the filename for initial hotspots")
-    ap.add_argument("--mask-transparent", action='store_true', help="If the image has a transparent background, map the transparent background to white")
-    ap.add_argument("--show-hotspots", action='store_true', help="If present, then always show collected hotspots on the image")
+
+    ap.add_argument("--filename", required=False, default="None",
+                    help="Optional. Filename to save hotspot data if provided")
+    ap.add_argument("--mask-transparent", action='store_true',
+                    help="If the image has a transparent background, map the transparent background to white")
+    ap.add_argument("--show-hotspots", action='store_true',
+                    help="If present, then always show collected hotspots on the image")
+    ap.add_argument("--read-only", action='store_true', help="If present, will not update the file")
 
     args = vars(ap.parse_args())
 
@@ -100,29 +131,27 @@ if __name__ == '__main__':
     width = args['width']
     height = args['height']
     filename = args['filename']
-    read_file = args['read_file']
     mask_transparent = args['mask_transparent']
     show_hotspots = args['show_hotspots']
-    
+    read_only = args['read_only']
+
     cv2.namedWindow(WINDOW_NAME, cv2.WINDOW_NORMAL)
     cv2.setMouseCallback(WINDOW_NAME, mouse_events)
 
     image = read_image()
 
-    if read_file:
+    if filename is not None:
         # read in the hotspot data
         with open(filename, "r") as f:
             csv_reader = csv.reader(f, delimiter=',')
             for row in csv_reader:
-                # print(f'\t{row}')
                 row = list(np.float_(row))
                 ix = int(row[0] * image.shape[1])
                 iy = int(row[1] * image.shape[0])
                 x = int(row[2] * image.shape[1])
                 y = int(row[3] * image.shape[0])
 
-                collected_hotspots.append((ix,iy,x,y))
-                print(collected_hotspots)
+                collected_hotspots.append((ix, iy, x, y))
 
     if show_hotspots:
         show_collected_hotspots()
@@ -131,16 +160,14 @@ if __name__ == '__main__':
 
     cv2.waitKey(0)
 
-    with open(filename, "w") as f:
-        hotsport_writer = csv.writer(f, delimiter=',')
-        for i, data in enumerate(collected_hotspots):
-            norm_ix = data[0] / image.shape[1]
-            norm_iy = data[1] / image.shape[0]
-            norm_x = data[2] / image.shape[1]
-            norm_y = data[3] / image.shape[0]
-            hotsport_writer.writerow([norm_ix, norm_iy, norm_x, norm_y])
-
+    if read_only == False and filename is not None:
+        with open(filename, "w") as f:
+            hotsport_writer = csv.writer(f, delimiter=',')
+            for i, data in enumerate(collected_hotspots):
+                norm_ix = data[0] / image.shape[1]
+                norm_iy = data[1] / image.shape[0]
+                norm_x = data[2] / image.shape[1]
+                norm_y = data[3] / image.shape[0]
+                hotsport_writer.writerow([norm_ix, norm_iy, norm_x, norm_y])
 
     cv2.destroyAllWindows()
-
-    
