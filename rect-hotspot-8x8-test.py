@@ -32,11 +32,13 @@ def denormalize_rectangles(rect_list, image_width, image_height):
 def create_solidcolor_rects(rect_list):
     solid_rects = []
     for rect in rect_list:
-        solid_rects.append(SolidColorRect(rect, color=(240, 32, 255)))
+        solid_rects.append(SolidColorRect(rect, colors=[(0,0,255), (255,0,0), (255, 32, 240)]))
 
     return solid_rects
 
+
 solid_rects_to_show = []
+
 
 def mouse_events(event, x, y,
                  flags, param):
@@ -45,7 +47,12 @@ def mouse_events(event, x, y,
     if event == cv2.EVENT_LBUTTONDOWN:
         for i, solid_rect in enumerate(solid_rects):
             if solid_rect.is_point_inside(x, y):
-                solid_rects_to_show.append(solid_rect)
+                solid_rect.process_point(x,y, image)
+                for solid_rect_to_show in solid_rects_to_show:
+                    if solid_rect_to_show.id == solid_rect.id:
+                        break
+                else:
+                    solid_rects_to_show.append(solid_rect)
 
     if event == cv2.EVENT_RBUTTONDOWN:
         for i, solid_rect in enumerate(solid_rects_to_show):
@@ -59,14 +66,14 @@ def mouse_events(event, x, y,
     cv2.imshow(WINDOW_NAME, image)
 
 
-def read_image(image_path, width, height):
+def read_image(image_path, width, height, mask_transparent):
     if mask_transparent:
         _image = cv2.imread(image_path, cv2.IMREAD_UNCHANGED)
         # make mask of where the transparent bits are
         trans_mask = _image[:, :, 3] == 0
 
         # replace areas of transparency with white and not transparent
-        _image[trans_mask] = [255, 255, 255, 255]
+        _image[trans_mask] = [228, 169, 0, 255]
         # new image without alpha channel...
         # new_img = cv2.cvtColor(image, cv2.COLOR_BGRA2BGR)
     else:
@@ -99,11 +106,26 @@ if __name__ == '__main__':
     cv2.namedWindow(WINDOW_NAME, cv2.WINDOW_NORMAL)
     cv2.setMouseCallback(WINDOW_NAME, mouse_events)
 
-    image = read_image(image_path, width, height)
+    image = read_image(image_path, width, height, mask_transparent)
     copy_of_image = image.copy()
 
-    solid_rects = create_solidcolor_rects(denormalize_rectangles(read_normalized_rects_from_file(filename), image.shape[1], image.shape[0]))
+    solid_rects = create_solidcolor_rects(
+        denormalize_rectangles(read_normalized_rects_from_file(filename), image.shape[1], image.shape[0]))
 
     cv2.imshow(WINDOW_NAME, image)
 
     cv2.waitKey(0)
+
+    tt_colors = ['r','b','p']
+
+    flatten_display_color_values = []
+    for solid_rect in solid_rects:
+        for solid_rect_to_show in solid_rects_to_show:
+            if solid_rect.id == solid_rect_to_show.id:
+                flatten_display_color_values.append(tt_colors[solid_rect.color_index])
+                break
+        else:
+            flatten_display_color_values.append('0')
+
+    flattened_image = ''.join(flatten_display_color_values)
+    print(f'image_string = "{flattened_image}"')

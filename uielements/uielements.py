@@ -1,7 +1,7 @@
 import cv2
 from abc import ABC, abstractmethod
 from enum import Enum
-
+import uuid
 
 class Shape(ABC):
     class Meta:
@@ -24,6 +24,7 @@ class Shape(ABC):
         self.font = cv2.FONT_HERSHEY_SIMPLEX
 
         self.state = Shape.Meta.State.INACTIVE
+        self.id = uuid.uuid4()
 
     # https://gist.github.com/xcsrz/8938a5d4a47976c745407fe2788c813a
     def _center_text(self, text):
@@ -200,17 +201,23 @@ class RectangleHotSpot(Shape):
 
 class SolidColorRect(RectangleHotSpot):
 
-    def __init__(self, rect, color=(255, 255, 255), label=""):
+    def __init__(self, rect, colors=[(255, 255, 255)], label=""):
         """
         :param rect: (ul-x, ul-y, lr-x, lr-y)
         :type rect: tuple
         """
         self.rect = rect
-        self.color = color
+        self.colors = colors
+        self.color_index = 0
         super().__init__(rect, label)
+
+    def process_point(self, x, y, image):
+        self.color_index += 1
+        if self.color_index >= len(self.colors):
+            self.color_index = 0
 
     def draw(self, image, color=None):
         if color is None:
-            color = self.color
+            color = self.colors[self.color_index]
         cv2.rectangle(image, pt1=(self.rect[0], self.rect[1]), pt2=(self.rect[2], self.rect[3]), color=color, thickness=-1)
 

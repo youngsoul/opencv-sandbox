@@ -16,6 +16,7 @@ import imutils
 import cv2
 import csv
 import numpy as np
+from pathlib import Path
 
 WINDOW_NAME = "Image"
 
@@ -31,6 +32,7 @@ ix = -1
 iy = -1
 drawing = False
 
+LINE_THICKNESS = 2
 
 def _rectContains(rect, pt):
     """
@@ -56,12 +58,12 @@ def draw_reactangle_with_drag(event, x, y, flags, param):
     elif event == cv2.EVENT_MOUSEMOVE:
         if drawing:
             image2 = read_image()
-            cv2.rectangle(image2, pt1=(ix, iy), pt2=(x, y), color=(0, 255, 255), thickness=3)
+            cv2.rectangle(image2, pt1=(ix, iy), pt2=(x, y), color=(0, 255, 255), thickness=LINE_THICKNESS)
             image = image2
 
     elif event == cv2.EVENT_LBUTTONUP:
         drawing = False
-        cv2.rectangle(image, pt1=(ix, iy), pt2=(x, y), color=(0, 255, 255), thickness=3)
+        cv2.rectangle(image, pt1=(ix, iy), pt2=(x, y), color=(0, 255, 255), thickness=LINE_THICKNESS)
         collected_hotspots.append((ix, iy, x, y))
         image = read_image()
 
@@ -92,7 +94,7 @@ def show_collected_hotspots():
         x = int(points[2])
         y = int(points[3])
 
-        cv2.rectangle(image, pt1=(ix, iy), pt2=(x, y), color=(255, 0, 0), thickness=3)
+        cv2.rectangle(image, pt1=(ix, iy), pt2=(x, y), color=(255, 0, 0), thickness=LINE_THICKNESS)
 
 
 def read_image():
@@ -141,17 +143,18 @@ if __name__ == '__main__':
     image = read_image()
 
     if filename is not None:
-        # read in the hotspot data
-        with open(filename, "r") as f:
-            csv_reader = csv.reader(f, delimiter=',')
-            for row in csv_reader:
-                row = list(np.float_(row))
-                ix = int(row[0] * image.shape[1])
-                iy = int(row[1] * image.shape[0])
-                x = int(row[2] * image.shape[1])
-                y = int(row[3] * image.shape[0])
+        if Path(filename).exists():
+            # read in the hotspot data
+            with open(filename, "r") as f:
+                csv_reader = csv.reader(f, delimiter=',')
+                for row in csv_reader:
+                    row = list(np.float_(row))
+                    ix = int(row[0] * image.shape[1])
+                    iy = int(row[1] * image.shape[0])
+                    x = int(row[2] * image.shape[1])
+                    y = int(row[3] * image.shape[0])
 
-                collected_hotspots.append((ix, iy, x, y))
+                    collected_hotspots.append((ix, iy, x, y))
 
     if show_hotspots:
         show_collected_hotspots()
