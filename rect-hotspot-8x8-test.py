@@ -1,9 +1,11 @@
-from uielements.uielements import SolidColorRect
+import sys
+
+from uielements.uielements import SolidColorRect, CircleButton, RectButton
 import csv
 import numpy as np
 import argparse
 import cv2
-import imutils
+from uielements.uielements import read_image
 
 
 def read_normalized_rects_from_file(filename):
@@ -38,7 +40,13 @@ def create_solidcolor_rects(rect_list):
 
 
 solid_rects_to_show = []
+ui_elements = []
 
+def _clear_solid_rects():
+    global solid_rects_to_show
+    solid_rects_to_show=[]
+    for i, solid_rect in enumerate(solid_rects):
+        solid_rect.reset_color_index()
 
 def mouse_events(event, x, y,
                  flags, param):
@@ -63,26 +71,35 @@ def mouse_events(event, x, y,
     for solid_rect in solid_rects_to_show:
         solid_rect.draw(image)
 
+    for ui_element in ui_elements:
+        ui_element.process_point(x, y, image, event)
+        ui_element.draw(image)
+
     cv2.imshow(WINDOW_NAME, image)
 
 
-def read_image(image_path, width, height, mask_transparent):
-    if mask_transparent:
-        _image = cv2.imread(image_path, cv2.IMREAD_UNCHANGED)
-        # make mask of where the transparent bits are
-        trans_mask = _image[:, :, 3] == 0
-
-        # replace areas of transparency with white and not transparent
-        _image[trans_mask] = [228, 169, 0, 255]
-        # new image without alpha channel...
-        # new_img = cv2.cvtColor(image, cv2.COLOR_BGRA2BGR)
-    else:
-        _image = cv2.imread(image_path)
-    _image = imutils.resize(_image, width, height)
-    return _image
 
 
 WINDOW_NAME = '8x8 Matrix'
+
+
+def _generate_display_string():
+    global flattened_image
+    tt_colors = ['r', 'b', 'p']
+    flatten_display_color_values = []
+    for solid_rect in solid_rects:
+        for solid_rect_to_show in solid_rects_to_show:
+            if solid_rect.id == solid_rect_to_show.id:
+                flatten_display_color_values.append(tt_colors[solid_rect.color_index])
+                break
+        else:
+            flatten_display_color_values.append('0')
+    flattened_image = ''.join(flatten_display_color_values)
+    print(f'image_string = "{flattened_image}"')
+
+def _close_window():
+    cv2.destroyAllWindows()
+    sys.exit(0)
 
 if __name__ == '__main__':
     ap = argparse.ArgumentParser()
@@ -106,26 +123,28 @@ if __name__ == '__main__':
     cv2.namedWindow(WINDOW_NAME, cv2.WINDOW_NORMAL)
     cv2.setMouseCallback(WINDOW_NAME, mouse_events)
 
-    image = read_image(image_path, width, height, mask_transparent)
-    copy_of_image = image.copy()
+    image = read_image(image_path, width, height, True)
 
     solid_rects = create_solidcolor_rects(
         denormalize_rectangles(read_normalized_rects_from_file(filename), image.shape[1], image.shape[0]))
 
-    cv2.imshow(WINDOW_NAME, image)
+    copy_of_image = image.copy()
 
+    rect_btn = RectButton(int(image.shape[1]*0.25),int(image.shape[0]*.9), "Clear", (255,0,0), (0,0,255), (64,64,64))
+    rect_btn.set_click_callback(_clear_solid_rects)
+    rect_btn.draw(image)
+    ui_elements.append(rect_btn)
+
+    gen_btn = RectButton(int(image.shape[1]*0.1),int(image.shape[0]*.9), "Gen", (255,0,0), (0,0,255), (64,64,64))
+    gen_btn.set_click_callback(_generate_display_string)
+    gen_btn.draw(image)
+    ui_elements.append(gen_btn)
+
+    close_btn = RectButton(int(image.shape[1]*0.70),int(image.shape[0]*.9), "Close", (255,0,0), (0,0,255), (64,64,64))
+    close_btn.set_click_callback(_close_window)
+    close_btn.draw(image)
+    ui_elements.append(close_btn)
+
+    cv2.imshow(WINDOW_NAME, image)
     cv2.waitKey(0)
 
-    tt_colors = ['r','b','p']
-
-    flatten_display_color_values = []
-    for solid_rect in solid_rects:
-        for solid_rect_to_show in solid_rects_to_show:
-            if solid_rect.id == solid_rect_to_show.id:
-                flatten_display_color_values.append(tt_colors[solid_rect.color_index])
-                break
-        else:
-            flatten_display_color_values.append('0')
-
-    flattened_image = ''.join(flatten_display_color_values)
-    print(f'image_string = "{flattened_image}"')
