@@ -5,7 +5,8 @@ upper left corner (x,y) and the lower right corner (x,y) values along with the s
 
 usage: python rect-hotspot.py --image-path ../images/8x8matrix_expansion.png --width 600 --show-hotspots
 
-usage: python rect-hotspot.py --read-only --image ../images/8x8matrix_expansion.png --width 600 --show-hotspots --filename 8x8-matrix-hotspots.csv
+usage:
+python rect-hotspot.py --read-only --image ../images/8x8matrix_expansion.png --width 600 --show-hotspots --filename 8x8-matrix-hotspots.csv
 
 
 Right click in the Rectangle hotspot to remove
@@ -126,6 +127,7 @@ if __name__ == '__main__':
     ap.add_argument("--show-hotspots", action='store_true',
                     help="If present, then always show collected hotspots on the image")
     ap.add_argument("--read-only", action='store_true', help="If present, will not update the file")
+    ap.add_argument("--unnormalized", action='store_true', help="If present, will not normalize the coordiates but instead provide exact image size coordinates")
 
     args = vars(ap.parse_args())
 
@@ -136,6 +138,7 @@ if __name__ == '__main__':
     mask_transparent = args['mask_transparent']
     show_hotspots = args['show_hotspots']
     read_only = args['read_only']
+    unnormalized = args['unnormalized']
 
     cv2.namedWindow(WINDOW_NAME, cv2.WINDOW_NORMAL)
     cv2.setMouseCallback(WINDOW_NAME, mouse_events)
@@ -167,10 +170,16 @@ if __name__ == '__main__':
         with open(filename, "w") as f:
             hotsport_writer = csv.writer(f, delimiter=',')
             for i, data in enumerate(collected_hotspots):
-                norm_ix = data[0] / image.shape[1]
-                norm_iy = data[1] / image.shape[0]
-                norm_x = data[2] / image.shape[1]
-                norm_y = data[3] / image.shape[0]
+                if unnormalized:
+                    norm_ix = data[0]
+                    norm_iy = data[1]
+                    norm_x = data[2]
+                    norm_y = data[3]
+                else:
+                    norm_ix = data[0] / image.shape[1]
+                    norm_iy = data[1] / image.shape[0]
+                    norm_x = data[2] / image.shape[1]
+                    norm_y = data[3] / image.shape[0]
                 hotsport_writer.writerow([norm_ix, norm_iy, norm_x, norm_y])
 
     cv2.destroyAllWindows()

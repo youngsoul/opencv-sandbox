@@ -9,6 +9,14 @@ A hotspot editor that will take a screen capture from the webcam and let you cli
 ```shell
 python hotspots.hotspot-editor.py
 ```
+
+```shell
+python rect-hotspot.py --image-path ../images/tello-controller.png --filename joystick_hotspots --show-hotspots
+
+```
+
+
+
 ## uielements
 
 create simple ui elements.
