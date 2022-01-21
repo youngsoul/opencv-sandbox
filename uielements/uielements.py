@@ -228,7 +228,8 @@ class DisplayValueLabel(Shape):
         # Display Class
         cv2.putText(image, self.label
                     , (self.label_x, self.label_y), cv2.FONT_HERSHEY_SIMPLEX, 0.8, (0, 0, 0), 1, cv2.LINE_AA)
-        cv2.putText(image, f"{self.value}"
+        if self.value is not None:
+            cv2.putText(image, f"{self.value}"
                     , (self.value_x, self.value_y), cv2.FONT_HERSHEY_SIMPLEX, 0.8, (255, 255, 255), 2, cv2.LINE_AA)
 
     def on_enter(self, x, y, image):
